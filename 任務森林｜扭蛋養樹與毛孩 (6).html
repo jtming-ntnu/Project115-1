@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>任務森林｜扭蛋養樹與毛孩</title>
+<link href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e6f6ea;--card:#fff;--ink:#22352c;--mut:#5f7a6c;--g:#2f9e6e;--gd:#1f6b4f;--pink:#ff6f91;--sun:#ffc93c;--lil:#7b6cf6;--line:#d3e8da;--soft:#f2faf4;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#112018;--card:#1b2e24;--ink:#e6f4ea;--mut:#9bb8a8;--line:#2c4739;--soft:#16271e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#112018;--card:#1b2e24;--ink:#e6f4ea;--mut:#9bb8a8;--line:#2c4739;--soft:#16271e;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.5}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+html,body{height:100%;overflow:hidden}
+.wrap{max-width:1100px;margin:auto;height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding:12px;display:grid;gap:12px;grid-template-columns:1fr;grid-template-rows:auto minmax(0,46dvh) minmax(0,1fr);grid-template-areas:"top" "world" "tasks"}
+@media(min-width:900px){.wrap{grid-template-columns:1.1fr .9fr;grid-template-rows:auto minmax(0,1fr);grid-template-areas:"top top" "tasks world"}}
+@media(max-width:600px){.top p{display:none}h1{font-size:22px}.card{padding:12px}.pill{padding:6px 10px;font-size:15px}.meter small{display:none}.meter{margin-top:6px}}
+.top{grid-area:top;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+h1{margin:0;font-size:26px;color:var(--gd)}
+.top p{margin:2px 0 0;color:var(--mut);font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:99px;background:var(--sun);color:#4a3600;font-size:18px}
+.pill.bump{animation:bump .5s}
+.card{background:var(--card);border:2px solid var(--line);border-radius:26px;padding:16px}
+h2{margin:0 0 10px;font-size:19px}
+#world{grid-area:world;display:flex;flex-direction:column;min-height:0}#tasks{grid-area:tasks;display:flex;flex-direction:column;min-height:0}#gacha,#daily,#bk{text-align:center;position:relative;width:100%;max-width:340px;max-height:94dvh;overflow:auto}#gov,#dov,#bov{z-index:40}
+#bk textarea{display:block;width:100%;margin:8px 0;padding:10px;border-radius:14px;border:2px solid var(--line);background:var(--soft);font-size:12px;word-break:break-all;resize:vertical}#bk h3{margin:18px 0 0;font-size:16px}#bk .btn{width:100%}
+/* scene */
+.scene{position:relative;flex:1;min-height:110px;border-radius:20px;overflow:hidden;background:linear-gradient(#8fd6ff,#e9fbff 64%,#8fd694 64%,#59b06a)}
+.sun{position:absolute;right:16px;top:10px;font-size:38px}
+.cloud{position:absolute;font-size:34px;animation:drift 30s linear infinite}
+.hill{position:absolute;bottom:-40px;left:-10%;width:70%;height:110px;border-radius:50%;background:#6cc47b}
+#tree{position:absolute;left:2%;bottom:0;width:60%;height:100%;transform-origin:50% 92%;cursor:pointer}
+#tree.boing{animation:boing .6s}
+#pet{position:absolute;right:9%;bottom:18px;line-height:1;cursor:pointer;transform-origin:bottom;animation:bob 1.7s ease-in-out infinite;transition:font-size .4s}
+#pet.hop{animation:hop .7s}
+.bubble{position:absolute;right:4%;top:56px;max-width:46%;padding:6px 12px;border-radius:14px;background:#fff;color:#22352c;font-size:13px;opacity:0;transform:translateY(6px);transition:.25s;pointer-events:none}
+.bubble.on{opacity:1;transform:none}
+.meter{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;margin-top:10px;font-size:14px}
+.meter b{font-weight:400}
+.bar{height:12px;border-radius:9px;background:var(--soft);border:1px solid var(--line);overflow:hidden;grid-column:2}
+.bar i{display:block;height:100%;width:0;border-radius:9px;transition:width .6s cubic-bezier(.3,1.4,.5,1)}
+.m-tree i{background:linear-gradient(90deg,#8fe08f,#2f9e6e)}.m-pet i{background:linear-gradient(90deg,#ffd36b,#ff8a4c)}
+.meter small{grid-column:2;color:var(--mut)}
+/* tasks */
+.add{display:grid;grid-template-columns:1fr auto auto;gap:8px}
+.add input,.add select{padding:10px 12px;border-radius:14px;border:2px solid var(--line);background:var(--soft)}
+.add input:focus,.add select:focus{outline:3px solid var(--lil);border-color:transparent}
+.btn{padding:10px 18px;border:0;border-radius:14px;background:var(--g);color:#fff;font-size:16px;box-shadow:0 4px 0 var(--gd);transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--gd)}
+.btn:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--lil);outline-offset:2px}
+.hint{display:none;margin:8px 0 0;font-size:13px;color:var(--lil)}.hint.on{display:block}
+.hint button{border:0;background:none;color:inherit;text-decoration:underline}
+#list{margin-top:12px;display:grid;align-content:start;gap:7px;flex:1;min-height:0;overflow:auto;padding:2px}
+.task{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:16px;border:2px solid var(--line);background:var(--soft);animation:pop .3s}
+.task.l0{border-color:var(--lil);background:color-mix(in srgb,var(--lil) 10%,var(--card))}
+.task.l1{border-color:#7fd1a5}
+.task.l2{border-style:dashed}
+.task.done{opacity:.55}.task.done .nm{text-decoration:line-through}
+.task input{width:22px;height:22px;accent-color:var(--g);flex:none}
+.nm{flex:1;min-width:0;overflow-wrap:anywhere}
+.l0 .nm{font-size:17px}.l2 .nm{font-size:14px}
+.cnt{font-style:normal;font-size:12px;padding:1px 8px;border-radius:9px;background:var(--card);border:1px solid var(--line)}
+.rw{font-size:12px;color:var(--mut);white-space:nowrap}
+.task button{border:0;background:var(--card);border-radius:10px;width:28px;height:28px;color:var(--mut)}
+.task button:hover{background:var(--pink);color:#fff}
+.empty{text-align:center;color:var(--mut);padding:26px 0}
+.foot{margin-top:10px;font-size:13px;color:var(--mut);display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}.fa{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end}
+.foot button{border:0;background:none;color:var(--mut);text-decoration:underline}
+/* gacha */
+.machine{width:210px;margin:6px auto 0;position:relative}
+.globe{height:150px;border-radius:50% 50% 42% 42%;border:7px solid var(--pink);position:relative;overflow:hidden;background:radial-gradient(circle at 30% 25%,#fff 0,#fff0 14%),linear-gradient(145deg,#e4f8ff,#a7e1ee)}
+.cap{position:absolute;width:34px;height:34px;border-radius:50%;background:linear-gradient(180deg,var(--c) 50%,#fff 50%);box-shadow:inset -3px -4px 6px #0003;animation:idle 2.6s ease-in-out infinite alternate}
+.base{height:96px;margin-top:-8px;border-radius:20px 20px 28px 28px;background:linear-gradient(#ff8fa8,#e0476b);position:relative;box-shadow:0 8px 0 #b3314f}
+.knob{position:absolute;left:26px;top:20px;width:56px;height:56px;border-radius:50%;border:4px solid #b3314f;background:radial-gradient(#fff3b0,var(--sun));display:grid;place-items:center;transition:transform .9s cubic-bezier(.5,0,.3,1)}
+.knob:after{content:"";width:34px;height:10px;border-radius:9px;background:#fff;border:2px solid #c98a00}
+.knob.turn{transform:rotate(540deg)}
+.chute{position:absolute;right:26px;top:26px;width:60px;height:46px;border-radius:12px 12px 16px 16px;background:#4d1a2a;border:4px solid #ffd0a0;display:grid;place-items:center}
+#drop{width:32px;height:32px;border-radius:50%;opacity:0;background:linear-gradient(180deg,var(--c,#8fe08f) 50%,#fff 50%)}
+#drop.go{animation:drop .6s cubic-bezier(.3,1.5,.5,1) forwards}
+.machine.shake .globe{animation:shake .3s 3}
+.machine.shake .cap{animation:chaos .22s infinite alternate}
+#spin{margin-top:16px;width:100%;max-width:280px;padding:13px;font-size:18px;background:var(--pink);box-shadow:0 5px 0 #b3314f}
+#spin:disabled{opacity:.45;pointer-events:none}
+#spinAll{display:block;margin:10px auto 0;width:100%;max-width:280px;padding:11px;font-size:16px;background:var(--lil);box-shadow:0 5px 0 #4b3fc0}#spinAll:disabled{opacity:.45;pointer-events:none}
+.odds{margin:10px 0 0;font-size:13px;color:var(--mut)}
+.gbtn{position:relative;width:54px;height:54px;border-radius:50%;border:3px solid var(--pink);background:var(--card);font-size:27px;display:grid;place-items:center;box-shadow:0 4px 0 #b3314f;transition:transform .15s}.gbtn:hover{transform:rotate(-8deg) scale(1.08)}.gbtn.ready{animation:wob 1.8s infinite}.gbtn b{position:absolute;right:-6px;top:-6px;min-width:22px;padding:0 6px;border-radius:99px;background:var(--pink);color:#fff;font-size:13px;font-weight:400;line-height:22px}.gx{position:absolute;right:12px;top:10px;border:0;background:var(--soft);width:32px;height:32px;border-radius:50%;color:var(--mut)}
+@keyframes wob{0%,70%,100%{transform:none}78%{transform:rotate(-12deg)}86%{transform:rotate(12deg)}94%{transform:rotate(-6deg)}}
+.tabs{display:flex;gap:6px;margin-top:8px}.sc{flex:1;border:2px solid var(--line);background:var(--soft);border-radius:14px;padding:3px 0;font-size:20px;line-height:1.2}.sc small{display:block;font-size:11px;color:var(--mut)}.sc.on{border-color:var(--g);background:var(--card);box-shadow:0 3px 0 var(--g)}.sc:disabled{opacity:.5;cursor:not-allowed}
+.gbtn.d{border-color:var(--g);box-shadow:0 4px 0 var(--gd)}.gbtn.d b{background:#e8384f}
+.q{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;text-align:left;padding:12px;margin-top:10px;border:2px solid var(--line);border-radius:18px;background:var(--soft)}.q .e{font-size:30px}.q p{margin:0;color:var(--mut);font-size:13px}.q.ok{opacity:.6}.q .btn{padding:8px 14px;font-size:15px}.q .btn:disabled{opacity:.5;box-shadow:none}
+.cl{border:2px solid var(--line);background:var(--card);border-radius:99px;padding:5px 11px;font-size:13px;color:var(--mut)}.cl[data-s=ok]{border-color:var(--g);color:var(--g)}.cl[data-s=sync]{border-color:var(--sun)}.cl[data-s=off]{border-style:dashed}
+@media(max-width:600px){.cl small{display:none}}
+/* popup */
+.ov{position:fixed;inset:0;background:#0008;display:none;place-items:center;z-index:50;padding:16px}.ov.on{display:grid}
+.box{background:var(--card);border-radius:30px;padding:26px 24px;text-align:center;max-width:340px;width:100%;animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
+.box .big{font-size:84px;line-height:1.1;animation:bob 1.2s ease-in-out infinite}
+.box h3{margin:6px 0 2px;font-size:22px}.box p{margin:4px 0;color:var(--mut)}
+.up{color:var(--g);font-size:17px;margin-top:8px!important}
+.fx{position:fixed;z-index:99;pointer-events:none;font-size:22px;animation:fly .95s cubic-bezier(.15,.9,.3,1) forwards}
+#toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 20px;border-radius:99px;transition:.3s;z-index:60;max-width:92%;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@keyframes drift{from{transform:translateX(-80px)}to{transform:translateX(560px)}}
+@keyframes bob{50%{transform:translateY(-7px)}}
+@keyframes hop{30%{transform:translateY(-40px) scale(1.1,.9)}60%{transform:scale(1.1,.9)}}
+@keyframes boing{30%{transform:scale(1.1,.88)}60%{transform:scale(.94,1.1)}}
+@keyframes pop{from{transform:scale(.7);opacity:0}}
+@keyframes bump{40%{transform:scale(1.25) rotate(-4deg)}}
+@keyframes idle{to{transform:translateY(-5px) rotate(8deg)}}
+@keyframes shake{25%{transform:translate(-6px,2px) rotate(-3deg)}75%{transform:translate(6px,-2px) rotate(3deg)}}
+@keyframes chaos{to{transform:translate(10px,-34px) rotate(80deg)}}
+@keyframes drop{from{transform:translateY(-34px) scale(.3);opacity:0}to{transform:none;opacity:1}}
+@keyframes fly{to{transform:translate(var(--x),var(--y)) rotate(var(--r)) scale(1.2);opacity:0}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div style="display:flex;align-items:center;gap:12px"><button class="gbtn d" id="dOpen" aria-label="開啟每日任務" title="每日任務">📅<b id="dBadge">0</b></button><div><h1>任務森林</h1><p>完成任務、扭蛋，培育四個場景的植物與夥伴</p></div></div>
+    <div style="display:flex;align-items:center;gap:12px"><button class="cl" id="cloudSt" style="display:none" data-s="sync" title="雲端存檔狀態（點一下重新同步）">☁️<small id="cloudTx"> 連線中</small></button><div class="pill" id="pill">🎟️ 扭蛋券 <b id="tk">0</b></div><button class="gbtn" id="gOpen" aria-label="開啟扭蛋機" title="開啟扭蛋機">🎰<b id="gBadge">0</b></button></div>
+  </header>
+
+  <section class="card" id="world">
+    <div class="scene" id="sceneBox">
+      <div class="sun" id="sun">☀️</div>
+      <div class="cloud" style="top:18px;left:0">☁️</div>
+      <div class="cloud" style="top:56px;left:0;animation-delay:-14s;font-size:26px;opacity:.8">☁️</div>
+      <div class="hill" id="hill"></div>
+      <div id="tree" title="戳戳小樹"></div>
+      <div class="bubble" id="bub"></div>
+      <div id="pet" title="摸摸毛孩"></div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="meter m-tree"><b id="tName">🌱 種子</b><div class="bar"><i id="tBar"></i></div><small id="tTxt"></small></div>
+    <div class="meter m-pet"><b id="pName">🥚 神祕蛋</b><div class="bar"><i id="pBar"></i></div><small id="pTxt"></small></div>
+  </section>
+
+  <section class="card" id="tasks">
+    <h2>我的任務</h2>
+    <div class="add">
+      <input id="inp" maxlength="60" placeholder="寫下一個任務，按 Enter 新增" aria-label="任務名稱">
+      <select id="lv" aria-label="任務層級"><option value="0">🌳 大任務</option><option value="1" selected>🌿 小任務</option><option value="2">🍃 子任務</option></select>
+      <button class="btn" id="addBtn">新增</button>
+    </div>
+    <p class="hint" id="hint"></p>
+    <div id="list"></div>
+    <div class="foot"><span>大任務 +3、小任務 +2、子任務 +1 張券</span><span class="fa"><button id="bkOpen">備份／還原</button><button id="clrDone">清除已完成</button><button id="clrAll">清空清單</button><button id="reset">重新開始</button></span></div>
+  </section>
+
+  <div class="ov" id="gov"><section class="card" id="gacha" role="dialog" aria-label="森林扭蛋機">
+    <button class="gx" id="gClose" aria-label="關閉扭蛋機">✕</button>
+    <h2>森林扭蛋機</h2>
+    <div class="machine" id="mach">
+      <div class="globe" id="globe"></div>
+      <div class="base"><div class="knob" id="knob"></div><div class="chute"><div id="drop"></div></div></div>
+    </div>
+    <button class="btn" id="spin">扭一下！</button>
+    <button class="btn" id="spinAll">一鍵扭完</button>
+    <p class="odds">綠色道具讓植物長大，橘色道具讓夥伴長大。目前培育中：<b id="gTarget"></b><br>連續 6 抽沒出稀有，下一抽必出稀有。</p>
+  </section></div>
+</div>
+
+<div class="ov" id="bov"><section class="card" id="bk" role="dialog" aria-label="備份與還原">
+  <button class="gx" id="bClose" aria-label="關閉備份視窗">✕</button>
+  <h2>備份與還原</h2>
+  <p class="odds">備份碼包含所有任務與培育進度，貼到另一台裝置或另一個網址就能還原。</p>
+  <textarea id="bkOut" readonly rows="3" aria-label="備份碼"></textarea>
+  <button class="btn" id="bCopy">複製備份碼</button>
+  <h3>還原進度</h3>
+  <textarea id="bkIn" rows="3" placeholder="貼上備份碼，再按還原" aria-label="貼上備份碼"></textarea>
+  <button class="btn" id="bRestore" style="background:var(--lil);box-shadow:0 4px 0 #4b3fc0">還原</button>
+</section></div>
+<div class="ov" id="dov"><section class="card" id="daily" role="dialog" aria-label="每日任務">
+  <button class="gx" id="dClose" aria-label="關閉每日任務">✕</button>
+  <h2>每日任務</h2>
+  <p class="odds">每天 0 點重置，完成就能多拿扭蛋券</p>
+  <div id="dList"></div>
+</section></div>
+<div class="ov" id="ov"><div class="box">
+  <div class="big" id="pE"></div><h3 id="pN"></h3><p id="pD"></p><p class="up" id="pU"></p>
+  <button class="btn" id="pOk" style="margin-top:14px">收下！</button>
+</div></div>
+<div id="toast" role="status"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const L=[{i:"🌳",t:3},{i:"🌿",t:2},{i:"🍃",t:1}];
+const PRIZES=[
+ {n:"晨露",i:"💧",k:"tree",v:1,w:30,c:"#6fd0ff"},
+ {n:"陽光碎片",i:"☀️",k:"tree",v:2,w:16,c:"#8fe08f"},
+ {n:"魔法肥料",i:"🧪",k:"tree",v:4,w:5,r:1,c:"#3fbf7f"},
+ {n:"野莓",i:"🍓",k:"pet",v:1,w:30,c:"#ff9a6b"},
+ {n:"小魚乾",i:"🐟",k:"pet",v:2,w:16,c:"#ffc24d"},
+ {n:"蜂蜜蛋糕",i:"🍰",k:"pet",v:4,w:5,r:1,c:"#ff7a3d"},
+ {n:"彩虹星塵",i:"🌈",k:"both",v:3,w:3,r:1,c:"#b78cff"}];
+const TT=[2,5,9,14],PT=[2,6,12],MUL=[1,1.4,1.8,2.2];
+const th=(i,a)=>a.map(x=>Math.round(x*MUL[i]));
+const PS=[46,54,64,78];
+const LINES=[["咚…咚…有東西在動！","好暖和，快孵出來了…"],["嗨！你是我的主人嗎？","肚子餓餓，想吃點心！"],["我學會新把戲了，看我！","今天也一起加油吧！"],["我是最強的夥伴，謝謝你！","全世界都看得到我，超閃亮！"]];
+const SC=[
+{n:"森林",ic:"🌳",pl:"小樹",pn:"孔雀",sky:"#8fd6ff,#e9fbff 64%,#8fd694 64%,#59b06a",hill:"#6cc47b",sun:"☀️",dc:"☁️",svg:treeSVG,P:["🌱 種子","🌿 嫩芽","🌳 小樹苗","🌲 綠蔭樹","🌸 開花神木"],A:["🥚","🐣","🐥","🦚"],AN:["神祕蛋","破殼寶寶","活力小雞","孔雀王"]},
+{n:"花田",ic:"🌻",pl:"向日葵",pn:"蝴蝶",sky:"#ffd0e6,#fff3df 64%,#b6e08a 64%,#7fc45a",hill:"#98d46a",sun:"🌞",dc:"☁️",svg:flowerSVG,P:["🌱 花種子","🌿 嫩芽","🌼 花苞","🌻 向日葵","🌈 巨大向日葵"],A:["🐛","🐝","🦋","🧚"],AN:["毛毛蟲","小蜜蜂","彩蝶","花仙子"]},
+{n:"沙漠",ic:"🌵",pl:"仙人掌",pn:"恐龍",sky:"#ffd59a,#fff0d0 64%,#f2cf8a 64%,#e0b265",hill:"#e8c47a",sun:"🌞",dc:"🌤️",svg:cactusSVG,P:["🌱 仙人掌種子","🌵 小仙人球","🌵 小仙人掌","🌵 壯碩仙人掌","🌺 開花仙人掌"],A:["🥚","🦎","🐊","🦖"],AN:["恐龍蛋","小蜥蜴","鱷魚","暴龍王"]},
+{n:"雪地",ic:"🌲",pl:"杉樹",pn:"北極熊",sky:"#9fb8ff,#e8f0ff 64%,#ffffff 64%,#d7e6f5",hill:"#f4f9ff",sun:"🌙",dc:"❄️",svg:pineSVG,P:["🌱 杉樹種子","🌿 小杉苗","🌲 小杉樹","🌲 雪松","🎄 聖誕神木"],A:["🥚","🐧","🦭","🐻‍❄️"],AN:["冰凍蛋","小企鵝","海豹","北極熊王"]}];
+function fresh(){return{tasks:[],tickets:1,sc:[0,1,2,3].map(()=>({p:0,a:0})),grow:0,view:0,pulls:0,dry:0,done:0,daily:{d:"",signed:false,small:false,claimed:false,streak:0,last:""}}}
+let S=fresh(),lastK="",lastI=null;
+let parent=null,busy=false;
+const KEY="taskForestV2";
+let lastSer="",cloud=null,syncT=null,syncing=false,dirty=false,pend=false;
+const ser=()=>{const{savedAt,...r}=S;return JSON.stringify(r)};
+const tmo=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r({code:"timeout"}),ms))]);
+function setCloud(st){$("cloudTx").textContent=" "+({sync:"同步中",ok:"已同步",off:"離線（僅存本機）"})[st];$("cloudSt").dataset.s=st}
+function save(){const s=ser();if(s===lastSer)return;lastSer=s;S.savedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}schedCloud()}
+function schedCloud(){if(!cloud)return;dirty=true;setCloud("sync");clearTimeout(syncT);syncT=setTimeout(push,1500)}
+async function push(){
+ if(!cloud)return;if(syncing){pend=true;return}
+ if(!S.savedAt){S.savedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+ syncing=true;
+ try{await cloud.set({savedAt:S.savedAt,json:JSON.stringify(S)});if(!pend)dirty=false;setCloud("ok")}catch(e){setCloud("off")}
+ syncing=false;if(pend){pend=false;schedCloud()}}
+function adopt(d){
+ try{const o=JSON.parse(d.json);S=Object.assign(fresh(),o);S.savedAt=d.savedAt;S.view=Math.min(S.view||0,S.grow||0);lastSer=ser();
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  renderAll();toast("已載入雲端最新進度");return true}catch(e){return false}}
+async function pull(){
+ const sn=await tmo(cloud.get(),10000);if(!sn.exists)return"none";
+ const d=sn.data(),l=S.savedAt||0;
+ if(d.savedAt>l)return adopt(d)?"adopted":"same";
+ return d.savedAt<l?"local":"same"}
+async function cloudInit(){
+ try{const c=window.claude;if(!c||!c.use)return;$("cloudSt").style.display="";setCloud("sync");
+  const[db,user]=await Promise.all([c.use("db"),c.use("user")]);
+  if(!db||!user){setCloud("off");return}
+  const id=await user.id();if(!id){setCloud("off");return}
+  cloud=db.doc("data/users/"+id+"/save");
+  const r=await pull();let had=false;try{had=!!localStorage.getItem(KEY)}catch(e){}
+  if(r==="local"||(r==="none"&&had))await push();else setCloud("ok")
+ }catch(e){cloud=null;setCloud("off")}}
+$("cloudSt").onclick=()=>{
+ if(!cloud){cloudInit();return}
+ if(syncing)return;setCloud("sync");
+ pull().then(r=>r==="local"||r==="none"?push():setCloud("ok")).catch(()=>setCloud("off"))};
+document.addEventListener("visibilitychange",()=>{
+ if(!document.hidden&&cloud&&!dirty&&!syncing&&!busy)pull().then(()=>setCloud("ok")).catch(()=>{})});
+function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);S=Object.assign(S,o);if(o.tree!==undefined&&!o.sc)S.sc[0]={p:o.tree,a:o.pet||0};delete S.tree;delete S.pet;S.view=Math.min(S.view,S.grow);return true}}catch(e){}return false}
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const stage=(xp,th)=>th.filter(x=>xp>=x).length;
+
+function tone(f){try{const a=new (window.AudioContext||window.webkitAudioContext)(),n=a.currentTime;f.forEach((q,i)=>{const o=a.createOscillator(),g=a.createGain();o.type="triangle";o.frequency.value=q;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.0001,n+i*.08);g.gain.exponentialRampToValueAtTime(.12,n+i*.08+.02);g.gain.exponentialRampToValueAtTime(.0001,n+i*.08+.25);o.start(n+i*.08);o.stop(n+i*.08+.26)});setTimeout(()=>a.close(),900)}catch(e){}}
+function fx(x,y,em,n=9){for(let i=0;i<n;i++){const s=document.createElement("span"),a=Math.PI*2*i/n,d=50+Math.random()*60;s.className="fx";s.textContent=em[i%em.length];s.style.left=x+"px";s.style.top=y+"px";s.style.setProperty("--x",Math.cos(a)*d+"px");s.style.setProperty("--y",Math.sin(a)*d-24+"px");s.style.setProperty("--r",Math.random()*240-120+"deg");document.body.appendChild(s);setTimeout(()=>s.remove(),1000)}}
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),2400)}
+
+function treeSVG(s){
+ const cfg=[0,0,{t:130,c:[[100,116,30],[80,130,20],[120,130,20]]},{t:100,c:[[100,80,44],[64,108,32],[136,108,32]]},{t:96,c:[[100,68,52],[56,104,38],[144,104,38],[100,110,34]]}][s];
+ let o='<svg viewBox="0 0 200 200" width="100%" height="100%" style="overflow:visible"><ellipse cx="100" cy="186" rx="'+(30+s*9)+'" ry="8" fill="#0002"/>';
+ if(s===0)return o+'<ellipse cx="100" cy="182" rx="26" ry="9" fill="#8a5a3b"/><path d="M100 176q-12-4-14-16 12 1 14 16zM100 176q12-4 14-16-12 1-14 16z" fill="#4ecb86"/></svg>';
+ if(s===1)return o+'<path d="M100 186v-40" stroke="#6b9b3f" stroke-width="7" stroke-linecap="round"/><path d="M100 156q-30-4-34-34 30 2 34 34zM100 146q30-4 34-32-30 0-34 32z" fill="#3fbf7f"/><circle cx="100" cy="138" r="6" fill="#ffd95a"/></svg>';
+ o+='<path d="M'+(92-s*2)+' 186L'+(95-s)+' '+cfg.t+'h'+(10+s*2)+'L'+(108+s*2)+' 186z" fill="#8a5a3b"/>';
+ cfg.c.forEach(([x,y,r])=>o+='<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="#2f9e6e"/>');
+ cfg.c.forEach(([x,y,r])=>o+='<circle cx="'+(x-r*.15)+'" cy="'+(y-r*.18)+'" r="'+r*.78+'" fill="#4ecb86"/>');
+ if(s===4){[[70,70],[110,50],[140,96],[56,106],[100,100],[128,70]].forEach(([x,y],i)=>o+='<circle cx="'+x+'" cy="'+y+'" r="6" fill="'+(i%2?"#ff6f91":"#ffb3c7")+'"/>');[[84,92],[120,112],[48,98]].forEach(([x,y])=>o+='<circle cx="'+x+'" cy="'+y+'" r="5" fill="#e8384f"/>');o+='<text x="150" y="40" font-size="22">✨</text><text x="34" y="64" font-size="18">✨</text>'}
+ return o+'</svg>'}
+
+function meter(xp,th,st){const n=th[st],p=th[st-1]||0;return{pct:n?(xp-p)/(n-p)*100:100,txt:n?"再收集 "+(n-xp)+" 點成長值升級（目前 "+xp+"）":"已達最高等級！（"+xp+"）"}}
+const G='<svg viewBox="0 0 200 200" width="100%" height="100%" style="overflow:visible">';
+const sh=s=>'<ellipse cx="100" cy="186" rx="'+(30+s*9)+'" ry="8" fill="#0002"/>';
+function sunHead(x,y,r){let o="";for(let k=0;k<12;k++)o+='<ellipse cx="'+x+'" cy="'+(y-r*.95)+'" rx="'+r*.27+'" ry="'+r*.48+'" fill="#ffc93c" transform="rotate('+k*30+' '+x+' '+y+')"/>';return o+'<circle cx="'+x+'" cy="'+y+'" r="'+r*.55+'" fill="#7a4a21"/>'}
+function flowerSVG(s){
+ let o=G+sh(s);
+ if(s===0)return o+'<ellipse cx="100" cy="182" rx="26" ry="9" fill="#8a5a3b"/><path d="M100 176q-12-4-14-16 12 1 14 16zM100 176q12-4 14-16-12 1-14 16z" fill="#7fd45a"/></svg>';
+ const h=[0,150,120,100,80][s];
+ o+='<path d="M100 186V'+h+'" stroke="#4aa33a" stroke-width="'+(5+s*2)+'" stroke-linecap="round"/><path d="M100 170q-34-4-40-30 34 2 40 30zM100 150q34-4 40-30-34 2-40 30z" fill="#5cc04a"/>';
+ if(s===1)return o+'</svg>';
+ if(s===2)return o+'<ellipse cx="100" cy="'+(h-6)+'" rx="16" ry="22" fill="#8fd45a"/><path d="M100 '+(h-26)+'q-8 12 0 40" stroke="#ffc93c" stroke-width="5" fill="none"/></svg>';
+ if(s===4)o+='<path d="M50 152v34M152 148v38" stroke="#4aa33a" stroke-width="6"/>'+sunHead(50,130,22)+sunHead(152,124,24);
+ o+=sunHead(100,h-6,s===3?32:44);
+ return o+(s===4?'<text x="150" y="40" font-size="22">✨</text>':"")+'</svg>'}
+function cactusSVG(s){
+ let o=G+sh(s)+'<ellipse cx="100" cy="184" rx="'+(34+s*6)+'" ry="9" fill="#e0b265"/>';
+ if(s===0)return o+'<circle cx="100" cy="176" r="7" fill="#6b4a2a"/><path d="M100 172q-6-8-4-14M100 172q6-8 4-14" stroke="#4aa86a" stroke-width="4" fill="none" stroke-linecap="round"/></svg>';
+ const h=[0,60,84,104,112][s],w=[0,38,40,46,52][s],c="#3f9b5b",arm=(d)=>'<path d="'+d+'" stroke="'+c+'" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';
+ o+='<rect x="'+(100-w/2)+'" y="'+(184-h)+'" width="'+w+'" height="'+h+'" rx="'+w/2+'" fill="'+c+'"/><path d="M'+(100-w*.15)+' '+(190-h)+'v'+(h-14)+'M'+(100+w*.15)+' '+(190-h)+'v'+(h-14)+'" stroke="#5fc07d" stroke-width="3" stroke-linecap="round" opacity=".7"/>';
+ if(s>=3)o+=arm("M"+(100-w/2+2)+" 150H64V118")+arm("M"+(100+w/2-2)+" 138H136V106");
+ if(s===4)o+='<circle cx="100" cy="'+(184-h)+'" r="10" fill="#ff6f91"/><circle cx="100" cy="'+(184-h)+'" r="4" fill="#ffd95a"/><circle cx="64" cy="114" r="6" fill="#ffb3c7"/><circle cx="136" cy="102" r="6" fill="#ffb3c7"/>';
+ return o+'</svg>'}
+function pineSVG(s){
+ let o=G+sh(s)+'<ellipse cx="100" cy="184" rx="'+(32+s*8)+'" ry="9" fill="#fff" stroke="#c9dcef"/>';
+ if(s===0)return o+'<path d="M100 178q-10-4-12-16 10 1 12 16zM100 178q10-4 12-16-10 1-12 16z" fill="#3f9b6b"/></svg>';
+ o+='<rect x="93" y="150" width="14" height="36" fill="#7a4f33"/>';
+ for(let k=0;k<s;k++){const yb=172-k*26,hw=s*10+14-k*9,ya=yb-44;
+  o+='<polygon points="'+(100-hw)+','+yb+' '+(100+hw)+','+yb+' 100,'+ya+'" fill="#2f8f64"/><polygon points="'+(100-hw*.42)+','+(ya+(yb-ya)*.4)+' '+(100+hw*.42)+','+(ya+(yb-ya)*.4)+' 100,'+ya+'" fill="#fff"/>'}
+ if(s===4)o+='<text x="88" y="54" font-size="24">⭐</text><circle cx="76" cy="150" r="5" fill="#e8384f"/><circle cx="126" cy="128" r="5" fill="#ffc93c"/><circle cx="92" cy="104" r="5" fill="#6fd0ff"/>';
+ return o+'</svg>'}
+const key=d=>d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+const yest=()=>key(new Date(Date.now()-864e5));
+function dayCheck(){const D=S.daily,t=key(new Date());if(D.d!==t){D.d=t;D.signed=false;D.small=false;D.claimed=false}}
+function dailyBadge(){dayCheck();const D=S.daily,n=(D.signed?0:1)+(D.small&&!D.claimed?1:0),b=$("dBadge");b.textContent=n;b.style.display=n?"":"none";$("dOpen").classList.toggle("ready",n>0)}
+function renderDaily(){dayCheck();const D=S.daily,ns=D.signed?D.streak:(D.last===yest()?D.streak+1:1),g=2+(ns>=3?1:0);
+ $("dList").innerHTML='<div class="q'+(D.signed?" ok":"")+'"><span class="e">📅</span><div><b>每日簽到</b><p>🔥 連續 '+ns+' 天，連續 3 天起多 +1 張</p></div><button class="btn" data-q="sign" '+(D.signed?"disabled":"")+'>'+(D.signed?"已簽到":"+"+g+" 🎟️ 簽到")+'</button></div><div class="q'+(D.claimed?" ok":"")+'"><span class="e">🌿</span><div><b>完成 1 個小任務</b><p>今天完成任一個 🌿 小任務（'+(D.small?1:0)+'/1）</p></div><button class="btn" data-q="claim" '+(D.small&&!D.claimed?"":"disabled")+'>'+(D.claimed?"已領取":D.small?"+2 🎟️ 領取":"未完成")+'</button></div>'}
+function sst(i){const d=S.sc[i];return[stage(d.p,th(i,TT)),stage(d.a,th(i,PT))]}
+const done_=i=>{const[a,b]=sst(i);return a>=4&&b>=3};
+function renderWorld(){
+ const i=S.view,c=SC[i],d=S.sc[i],[ts,ps]=sst(i);
+ $("sceneBox").style.background="linear-gradient(180deg,"+c.sky+")";$("hill").style.background=c.hill;$("sun").textContent=c.sun;
+ document.querySelectorAll(".cloud").forEach(e=>e.textContent=c.dc);
+ $("tree").innerHTML=c.svg(ts);$("pet").textContent=c.A[ps];$("pet").style.fontSize=PS[ps]+"px";
+ $("tName").textContent=c.P[ts]+" Lv."+(ts+1);$("pName").textContent=c.A[ps]+" "+c.AN[ps]+" Lv."+(ps+1);
+ let m=meter(d.p,th(i,TT),ts);$("tBar").style.width=m.pct+"%";$("tTxt").textContent=m.txt;
+ m=meter(d.a,th(i,PT),ps);$("pBar").style.width=m.pct+"%";$("pTxt").textContent=m.txt;
+ $("gTarget").textContent=SC[S.grow].ic+" "+SC[S.grow].n;
+ $("tabs").innerHTML=SC.map((x,k)=>'<button class="sc'+(k===i?" on":"")+'" data-i="'+k+'" '+(k>S.grow?"disabled":"")+' title="'+x.n+'">'+(k>S.grow?"🔒":x.ic)+"<small>"+(k>S.grow?"未解鎖":done_(k)?"已完成":"培育中")+"</small></button>").join("")}
+
+function renderTasks(){
+ const T=S.tasks;
+ $("list").innerHTML=T.length?T.map((t,i)=>{
+  let c="";if(t.level<2){let d=0,n=0;for(let j=i+1;j<T.length&&T[j].level>t.level;j++){n++;if(T[j].done)d++}if(n)c='<em class="cnt">'+d+"/"+n+"</em>"}
+  return '<div class="task l'+t.level+(t.done?" done":"")+'" style="margin-left:'+t.level*22+'px"><input type="checkbox" data-a="chk" data-id="'+t.id+'" '+(t.done?"checked disabled":"")+' aria-label="完成任務"><span>'+L[t.level].i+'</span><span class="nm">'+esc(t.name)+"</span>"+c+'<span class="rw">+'+L[t.level].t+"🎟️</span>"+(t.level<2&&!t.done?'<button data-a="sub" data-id="'+t.id+'" title="在底下新增細項" aria-label="新增下層任務">＋</button>':"")+'<button data-a="del" data-id="'+t.id+'" aria-label="刪除">✕</button></div>'}).join(""):'<div class="empty">🌼 森林還是一片空地<br>先新增一個任務吧！</div>';
+ $("tk").textContent=S.tickets;$("gBadge").textContent=S.tickets;dailyBadge();$("gOpen").classList.toggle("ready",S.tickets>0);$("spin").disabled=S.tickets<1||busy;$("spinAll").disabled=S.tickets<2||busy;$("spinAll").textContent=S.tickets>1?"一鍵扭完（"+S.tickets+" 顆）":"一鍵扭完（需 2 張以上）";
+ $("spin").textContent=S.tickets>0?"扭一下！（剩 "+S.tickets+" 張）":"完成任務就能獲得扭蛋券"}
+function renderAll(){renderTasks();renderWorld();save()}
+
+function addTask(){
+ const name=$("inp").value.trim();if(!name){toast("先寫下一個任務喔");$("inp").focus();return}
+ let level=+$("lv").value,at=S.tasks.length;
+ if(parent){const i=S.tasks.findIndex(t=>t.id===parent);if(i>-1){level=Math.min(2,S.tasks[i].level+1);at=i+1;while(at<S.tasks.length&&S.tasks[at].level>S.tasks[i].level)at++}}
+ S.tasks.splice(at,0,{id:uid(),name,level,done:false});
+ $("inp").value="";clearParent();renderAll();$("inp").focus()}
+function setParent(id){const t=S.tasks.find(x=>x.id===id);if(!t)return;parent=id;$("lv").value=Math.min(2,t.level+1);$("hint").innerHTML="加到「"+esc(t.name)+"」底下 <button id=\"cp\">取消</button>";$("hint").classList.add("on");$("cp").onclick=clearParent;$("inp").focus()}
+function clearParent(){parent=null;$("hint").classList.remove("on")}
+function complete(id,el){
+ const t=S.tasks.find(x=>x.id===id);if(!t||t.done)return;
+ t.done=true;S.done++;S.tickets+=L[t.level].t;if(t.level===1){dayCheck();S.daily.small=true}
+ const r=el.getBoundingClientRect();fx(r.left+10,r.top+10,["🎟️","✨","🌿"],7);tone([587,880]);
+ $("pill").classList.remove("bump");void $("pill").offsetWidth;$("pill").classList.add("bump");
+ toast("完成！獲得 "+L[t.level].t+" 張扭蛋券");renderAll()}
+
+function pick(){
+ let pool=S.dry>=5?PRIZES.filter(p=>p.r):PRIZES;
+ let x=Math.random()*pool.reduce((a,p)=>a+p.w,0);
+ for(const p of pool){x-=p.w;if(x<=0)return p}return pool[0]}
+function spin(){
+ if(busy||S.tickets<1)return;
+ busy=true;S.tickets--;S.pulls++;
+ const p=pick();S.dry=p.r?0:S.dry+1;
+ $("spin").disabled=true;$("mach").classList.remove("shake");void $("mach").offsetWidth;$("mach").classList.add("shake");
+ $("knob").classList.add("turn");tone([180,220,180,240,200]);
+ $("drop").style.setProperty("--c",p.c);$("drop").classList.remove("go");
+ setTimeout(()=>$("drop").classList.add("go"),900);
+ setTimeout(()=>reveal(p),1600)}
+function reveal(p){
+ const gi=S.grow,c=SC[gi],[ot,op]=sst(gi),d=S.sc[gi];
+ if(p.k==="both"){d.p+=p.v;d.a+=p.v}
+ else if(p.k==="tree"){if(ot>=4)d.a+=p.v;else d.p+=p.v}
+ else{if(op>=3)d.p+=p.v;else d.a+=p.v}
+ const[nt,np]=sst(gi);
+ let up="";if(nt>ot)up+="🌱 "+c.pl+"長大了：「"+c.P[nt]+"」！ ";if(np>op)up+="🐾 "+c.pn+"進化了：「"+c.AN[np]+"」！ ";
+ if(done_(gi)&&gi<3){S.grow++;up+="🎉 「"+c.n+"」培育完成！解鎖新場景「"+SC[gi+1].n+"」！"}else if(done_(gi))up+="🏆 四個場景全部培育完成！";
+ const who=p.k==="tree"?c.pl:p.k==="pet"?c.pn:c.pl+"和"+c.pn;lastI=gi;lastK=p.k;
+ $("pE").textContent=p.i;$("pN").textContent=(p.r?"稀有！":"")+p.n;
+ $("pD").textContent=who+" +"+p.v+" 成長值";$("pU").textContent=up;
+ $("ov").classList.add("on");$("pOk").focus();
+ fx(innerWidth/2,innerHeight/2,p.r?["🌟","🎊","✨",p.i]:["✨",p.i,"🎉"],p.r?16:10);
+ tone(p.r||up?[523,659,784,1046,1318]:[523,659,784]);
+ $("knob").classList.remove("turn");$("mach").classList.remove("shake");$("drop").classList.remove("go");
+ busy=false;renderAll()}
+function applyPrize(p){const gi=S.grow,c=SC[gi],[ot,op]=sst(gi),d=S.sc[gi],up=[];
+ if(p.k==="both"){d.p+=p.v;d.a+=p.v}else if(p.k==="tree"){if(ot>=4)d.a+=p.v;else d.p+=p.v}else{if(op>=3)d.p+=p.v;else d.a+=p.v}
+ const[nt,np]=sst(gi);if(nt>ot)up.push("🌱 "+c.pl+"長大了：「"+c.P[nt]+"」");if(np>op)up.push("🐾 "+c.pn+"進化了：「"+c.AN[np]+"」");
+ if(done_(gi)&&gi<3){S.grow++;up.push("🎉 「"+c.n+"」培育完成，解鎖「"+SC[gi+1].n+"」")}else if(done_(gi))up.push("🏆 四個場景全部培育完成");return up}
+function spinAll(){
+ if(busy||S.tickets<2)return;
+ busy=true;$("spin").disabled=true;$("spinAll").disabled=true;
+ $("mach").classList.remove("shake");void $("mach").offsetWidth;$("mach").classList.add("shake");$("knob").classList.add("turn");tone([180,220,180,240,200,260]);
+ setTimeout(()=>{
+  const n=S.tickets,got=[],ups=[],cnt={};S.tickets=0;S.pulls+=n;
+  for(let j=0;j<n;j++){const p=pick();S.dry=p.r?0:S.dry+1;got.push(p);cnt[p.n]=(cnt[p.n]||0)+1;ups.push(...applyPrize(p))}
+  $("pE").textContent=got.some(p=>p.r)?"🎊":"🎁";$("pN").textContent="一鍵扭完 "+n+" 顆！";
+  $("pD").textContent=PRIZES.filter(p=>cnt[p.n]).map(p=>(p.r?"⭐":"")+p.i+p.n+" ×"+cnt[p.n]).join("、");
+  $("pU").innerHTML=ups.join("<br>");
+  $("ov").classList.add("on");$("pOk").focus();
+  fx(innerWidth/2,innerHeight/2,["🌟","🎊","✨","🎉"],16);tone([523,659,784,1046,1318]);
+  $("knob").classList.remove("turn");$("mach").classList.remove("shake");
+  lastK="both";lastI=S.grow;busy=false;renderAll()},1400)}
+function closePop(){
+ $("ov").classList.remove("on");$("gov").classList.remove("on");
+ const k=lastK;if(lastI!==null)S.view=lastI;renderWorld();save();
+ if(k!=="pet"){bounce("tree","boing")}
+ if(k!=="tree"){bounce("pet","hop")}}
+function bounce(id,c){const e=$(id);e.classList.remove(c);void e.offsetWidth;e.classList.add(c);const r=e.getBoundingClientRect();fx(r.left+r.width/2,r.top+r.height/3,id==="tree"?["🍃","🌸","✨"]:["💖","✨","⭐"],7)}
+let bt;function say(){const l=LINES[sst(S.view)[1]];$("bub").textContent=l[Math.floor(Math.random()*l.length)];$("bub").classList.add("on");clearTimeout(bt);bt=setTimeout(()=>$("bub").classList.remove("on"),2200)}
+
+function initGlobe(){
+ const cs=["#ff9a9e","#ffd86f","#84fab0","#a1c4fd","#d4a5ff","#fbc2eb","#ffb27a"],pos=[[10,6],[46,4],[82,6],[118,6],[26,36],[64,34],[100,36]];
+ $("globe").innerHTML=pos.map((p,i)=>'<span class="cap" style="left:'+p[0]+"px;bottom:"+p[1]+"px;--c:"+cs[i]+";animation-delay:"+i*.17+'s"></span>').join("")}
+
+$("addBtn").onclick=addTask;
+$("inp").onkeydown=e=>{if(e.key==="Enter")addTask()};
+$("list").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.a==="sub")setParent(b.dataset.id);if(b.dataset.a==="del"){S.tasks=S.tasks.filter(t=>t.id!==b.dataset.id);renderAll()}});
+$("list").addEventListener("change",e=>{if(e.target.dataset.a==="chk"&&e.target.checked)complete(e.target.dataset.id,e.target)});
+$("gOpen").onclick=()=>{$("gov").classList.add("on");$("spin").focus()};$("gClose").onclick=()=>$("gov").classList.remove("on");$("gov").onclick=e=>{if(e.target.id==="gov"&&!busy)$("gov").classList.remove("on")};addEventListener("keydown",e=>{if(e.key==="Escape"&&!busy){$("gov").classList.remove("on");$("dov").classList.remove("on");$("bov").classList.remove("on");$("ov").classList.remove("on")}});$("spin").onclick=spin;$("knob").onclick=spin;$("spinAll").onclick=spinAll;$("pOk").onclick=closePop;
+$("clrDone").onclick=()=>{const n=S.tasks.filter(t=>t.done).length;if(!n){toast("目前沒有已完成的任務");return}S.tasks=S.tasks.filter(t=>!t.done);renderAll();toast("已清除 "+n+" 項已完成任務，獎勵與成長都保留")};
+{let ct=null;const b=$("clrAll");b.onclick=()=>{if(!S.tasks.length){toast("清單已經是空的");return}if(!ct){b.textContent="再按一次確認清空";ct=setTimeout(()=>{ct=null;b.textContent="清空清單"},3000);return}clearTimeout(ct);ct=null;b.textContent="清空清單";const n=S.tasks.length;S.tasks=[];clearParent();renderAll();toast("已清空 "+n+" 項任務，扭蛋券與成長都保留")}}
+$("tabs").onclick=e=>{const b=e.target.closest(".sc");if(b&&!b.disabled){S.view=+b.dataset.i;renderWorld();save();tone([660,880])}};
+$("dOpen").onclick=()=>{renderDaily();$("dov").classList.add("on")};$("dClose").onclick=()=>$("dov").classList.remove("on");$("dov").onclick=e=>{if(e.target.id==="dov")$("dov").classList.remove("on")};
+$("dList").onclick=e=>{const b=e.target.closest("button");if(!b||b.disabled)return;dayCheck();const D=S.daily,r=b.getBoundingClientRect();let g=0;
+ if(b.dataset.q==="sign"&&!D.signed){D.streak=D.last===yest()?D.streak+1:1;D.last=D.d;D.signed=true;g=2+(D.streak>=3?1:0)}
+ else if(b.dataset.q==="claim"&&D.small&&!D.claimed){D.claimed=true;g=2}
+ if(!g)return;S.tickets+=g;fx(r.left+r.width/2,r.top,["🎟️","✨","⭐"],9);tone([523,659,784]);toast("領取成功！獲得 "+g+" 張扭蛋券");renderAll();renderDaily()};
+$("tree").onclick=()=>bounce("tree","boing");
+$("pet").onclick=()=>{bounce("pet","hop");say();tone([660,880])};
+let rt;$("reset").onclick=()=>{if(!rt){$("reset").textContent="再按一次確認清空";rt=setTimeout(()=>{rt=null;$("reset").textContent="重新開始"},3000);return}clearTimeout(rt);rt=null;$("reset").textContent="重新開始";S=fresh();renderAll();toast("森林已重置，開始新的冒險！")};
+
+if(!load()){S.tasks=[{id:uid(),name:"完成期末報告",level:0,done:false},{id:uid(),name:"整理參考資料",level:1,done:false},{id:uid(),name:"找 3 篇文獻",level:2,done:false},{id:uid(),name:"寫出報告大綱",level:1,done:false}]}
+const BK="TFOREST1:";
+const makeCode=()=>BK+btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+$("bkOpen").onclick=()=>{$("bkOut").value=makeCode();$("bkIn").value="";$("bov").classList.add("on")};
+$("bClose").onclick=()=>$("bov").classList.remove("on");
+$("bov").onclick=e=>{if(e.target.id==="bov")$("bov").classList.remove("on")};
+$("bCopy").onclick=async()=>{const t=$("bkOut");t.select();try{await navigator.clipboard.writeText(t.value);toast("備份碼已複製")}catch(e){try{document.execCommand("copy");toast("備份碼已複製")}catch(e2){toast("請手動全選後複製")}}};
+{let rt2=null;const b=$("bRestore");b.onclick=()=>{
+ const raw=$("bkIn").value.trim();let o;
+ try{if(!raw.startsWith(BK))throw 0;o=JSON.parse(decodeURIComponent(escape(atob(raw.slice(BK.length)))));if(!Array.isArray(o.tasks)||!Array.isArray(o.sc))throw 0}catch(e){toast("備份碼格式不正確，請重新複製完整內容");return}
+ if(!rt2){b.textContent="再按一次確認覆蓋目前進度";rt2=setTimeout(()=>{rt2=null;b.textContent="還原"},3000);return}
+ clearTimeout(rt2);rt2=null;b.textContent="還原";
+ S=Object.assign(fresh(),o);S.view=Math.min(S.view||0,S.grow||0);$("bkIn").value="";$("bov").classList.remove("on");clearParent();renderAll();toast("已還原備份進度")}}
+initGlobe();lastSer=ser();renderAll();cloudInit();
+</script>
+</body>
+</html>
